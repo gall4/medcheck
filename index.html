@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedCheck</title>
+<link rel="icon" type="image/png" href="MEDC.png"><style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0FSG8RQ6FL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-0FSG8RQ6FL');
+</script>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f3;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+.container { max-width: 760px; margin: 0 auto; padding: 2rem 1rem 5rem; }
+.page { display: none; }
+.page.active { display: block; }
+h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.5rem; }
+.subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+
+/* ---------- Home page system cards ---------- */
+.system-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 1.5rem; }
+.system-card {
+  background: #fff;
+  border: 1px solid #e3e3e0;
+  border-radius: 16px;
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  cursor: pointer;
+  text-decoration: none;
+  color: #1a1a1a;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.system-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(55,138,221,0.12);
+  border-color: #378ADD;
+}
+.system-card img { width: 80px; height: 80px; object-fit: contain; flex-shrink: 0; }
+.system-card-text { flex: 1; }
+.system-card-title { font-size: 17px; font-weight: 600; margin-bottom: 2px; }
+.system-card-sub { font-size: 13px; color: #888; }
+.system-card-arrow { color: #ccc; font-size: 20px; flex-shrink: 0; }
+
+/* ---------- Donate button (floating, all pages) ---------- */
+.donate-fab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #378ADD;
+  border-radius: 999px;
+  padding: 8px 14px 8px 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  text-decoration: none;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 500;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.donate-fab:hover { transform: scale(1.04); box-shadow: 0 6px 18px rgba(55,138,221,0.25); }
+.donate-fab img { width: 26px; height: 26px; object-fit: contain; }
+.donate-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.donate-modal-overlay.active { display: flex; }
+.donate-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+}
+.donate-modal img { width: 64px; height: 64px; margin: 0 auto 0.75rem; display: block; }
+.donate-modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 0.5rem; }
+.donate-modal p { font-size: 13px; color: #666; margin-bottom: 1.25rem; line-height: 1.5; }
+.donate-modal-close {
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+}
+.donate-modal-close:hover { background: #333; }
+
+/* ---------- Buttons & lists ---------- */
+.scenario-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+.scenario-btn {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+  color: #1a1a1a;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+}
+.scenario-btn:hover { background: #f0f0ee; border-color: #bbb; }
+.scenario-btn.inactive {
+  background: #f5f5f3;
+  border: 1px dashed #ddd;
+  color: #aaa;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.add-scenario-btn {
+  background: #fff;
+  border: 1px solid #378ADD;
+  color: #378ADD;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.add-scenario-btn:hover { background: #378ADD; color: #fff; }
+
+.random-btn {
+  background: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.random-btn:hover { background: #333; }
+.random-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 1.25rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.back-btn:hover { color: #1a1a1a; }
+
+.diagnosis-label {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border-radius: 8px;
+  border-left: 3px solid #378ADD;
+}
+
+/* ---------- Selection picker (choose scenarios screen) ---------- */
+.picker-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+.picker-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.picker-item input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; flex-shrink: 0; }
+.picker-item.checked { border-color: #378ADD; background: #f0f7ff; }
+.confirm-btn {
+  background: #378ADD;
+  border: none;
+  border-radius: 8px;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  width: 100%;
+}
+.confirm-btn:hover { background: #2c70b3; }
+.confirm-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+/* ---------- Form fields (used inside tests) ---------- */
+.lungs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+@media (max-width: 560px) { .lungs-grid { grid-template-columns: 1fr; } }
+.zone-block { padding: 10px 12px; background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; }
+.zone-title { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
+.field-subtitle { font-size: 12px; font-weight: 500; color: #666; margin: 6px 0 4px; }
+.field-block { margin-bottom: 10px; padding: 10px 12px; background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; }
+.field-title { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 6px; }
+.opt { display: flex; align-items: flex-start; gap: 7px; margin: 4px 0; cursor: pointer; font-size: 14px; line-height: 1.4; }
+.opt input[type=checkbox] { margin-top: 2px; flex-shrink: 0; cursor: pointer; width: 15px; height: 15px; }
+.opt.correct { color: #2d6a0f; font-weight: 500; }
+.opt.wrong { color: #a32d2d; text-decoration: line-through; }
+.opt.missed { color: #185FA5; font-weight: 500; }
+
+.submit-btn {
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  padding: 0.85rem 2rem;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  width: 100%;
+  margin: 1.5rem 0 0.75rem;
+}
+.submit-btn:hover { background: #f0f0ee; }
+
+.result-banner { border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.result-banner.good { background: #eaf3de; color: #2d6a0f; }
+.result-banner.bad { background: #fcebeb; color: #a32d2d; }
+.legend { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #555; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.section-divider { font-size: 13px; font-weight: 600; color: #888; margin: 1.25rem 0 0.5rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+@media (max-width: 480px) {
+  .container { padding: 1.25rem 0.75rem 5rem; }
+  h1 { font-size: 19px; }
+  .system-card { padding: 0.9rem 1rem; }
+  .system-card img { width: 60px; height: 60px; }
+  .system-card-title { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Тренажёр физикального обследования</h1>
+  <p class="subtitle">Выберите систему органов, чтобы начать тренировку</p>
+  <div class="system-grid">
+    <a class="system-card" href="resp.html">
+      <img src="i_resp.png" alt="Дыхательная система">
+      <div class="system-card-text">
+        <div class="system-card-title">Дыхательная система</div>
+        <div class="system-card-sub">Аускультация легких · 5 сценариев</div>
+      </div>
+      <i class="ti ti-chevron-right system-card-arrow"></i>
+    </a>
+    <a class="system-card" href="cardio.html">
+      <img src="i_cardio.png" alt="Сердечно-сосудистая система">
+      <div class="system-card-text">
+        <div class="system-card-title">Сердечно-сосудистая система</div>
+        <div class="system-card-sub">Аускультация сердца · 8 сценариев</div>
+      </div>
+      <i class="ti ti-chevron-right system-card-arrow"></i>
+    </a>
+    <a class="system-card" href="gi.html">
+      <img src="i_gi.png" alt="Пищеварительная система">
+      <div class="system-card-text">
+        <div class="system-card-title">Пищеварительная система</div>
+        <div class="system-card-sub">Осмотр и пальпация живота · 4 сценария</div>
+      </div>
+      <i class="ti ti-chevron-right system-card-arrow"></i>
+    </a>
+  </div>
+</div>
+
+<div style="position:fixed;bottom:18px;right:18px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+  <button class="donate-fab" onclick="openFeedback()" style="background:#f0f7ff;border-color:#378ADD;">
+    <span style="color:#378ADD;">Обратная связь</span>
+</div>
+<div class="donate-modal-overlay" id="donate-overlay">
+  <div class="donate-modal" style="max-width:360px;">
+    <h3 style="margin-bottom:0.75rem;">Поддержать проект</h3>
+    <p style="margin-bottom:0.75rem;">Если тренажёр помогает в подготовке — можно угостить автора кофе. Совершенно необязательно, но приятно :)</p>
+    <img src="donate.png" alt="QR для оплаты" style="width:180px;height:180px;display:block;margin:0 auto 0.75rem;border-radius:8px;">
+    <a href="https://boosty.to/gall4/donate" target="_blank" style="display:block;background:#378ADD;color:#fff;text-decoration:none;border-radius:8px;padding:0.65rem 1rem;font-size:14px;font-weight:600;text-align:center;margin-bottom:0.75rem;">Порадовать</a>
+    <button class="donate-modal-close" onclick="closeDonate()">Закрыть</button>
+  </div>
+</div>
+<div class="donate-modal-overlay" id="feedback-overlay">
+  <div class="donate-modal" style="max-width:360px;">
+    <h3 style="margin-bottom:0.75rem;">Обратная связь</h3>
+    <p style="margin-bottom:1.25rem;line-height:1.6;">Есть предложения, нашли ошибку или хотите добавить новые сценарии? Пишите сюда — <strong>klimgoth@gmail.com</strong></p>
+    <button class="donate-modal-close" onclick="closeFeedback()">Закрыть</button>
+  </div>
+</div>
+
+<script>
+function openDonate() { document.getElementById('donate-overlay').classList.add('active'); }
+function closeDonate() { document.getElementById('donate-overlay').classList.remove('active'); }
+function openFeedback() { document.getElementById('feedback-overlay').classList.add('active'); }
+function closeFeedback() { document.getElementById('feedback-overlay').classList.remove('active'); }
+</script>
+</body>
+</html>

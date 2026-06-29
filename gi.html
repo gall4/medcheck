@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedCheck</title>
+<link rel="icon" type="image/png" href="MEDC.png"><style>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f3;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+.container { max-width: 760px; margin: 0 auto; padding: 2rem 1rem 5rem; }
+.page { display: none; }
+.page.active { display: block; }
+h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.5rem; }
+.subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+
+/* ---------- Home page system cards ---------- */
+.system-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 1.5rem; }
+.system-card {
+  background: #fff;
+  border: 1px solid #e3e3e0;
+  border-radius: 16px;
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  cursor: pointer;
+  text-decoration: none;
+  color: #1a1a1a;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.system-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(55,138,221,0.12);
+  border-color: #378ADD;
+}
+.system-card img { width: 80px; height: 80px; object-fit: contain; flex-shrink: 0; }
+.system-card-text { flex: 1; }
+.system-card-title { font-size: 17px; font-weight: 600; margin-bottom: 2px; }
+.system-card-sub { font-size: 13px; color: #888; }
+.system-card-arrow { color: #ccc; font-size: 20px; flex-shrink: 0; }
+
+/* ---------- Donate button (floating, all pages) ---------- */
+.donate-fab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #378ADD;
+  border-radius: 999px;
+  padding: 8px 14px 8px 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  text-decoration: none;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 500;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.donate-fab:hover { transform: scale(1.04); box-shadow: 0 6px 18px rgba(55,138,221,0.25); }
+.donate-fab img { width: 26px; height: 26px; object-fit: contain; }
+.donate-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.donate-modal-overlay.active { display: flex; }
+.donate-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+}
+.donate-modal img { width: 64px; height: 64px; margin: 0 auto 0.75rem; display: block; }
+.donate-modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 0.5rem; }
+.donate-modal p { font-size: 13px; color: #666; margin-bottom: 1.25rem; line-height: 1.5; }
+.donate-modal-close {
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+}
+.donate-modal-close:hover { background: #333; }
+
+/* ---------- Buttons & lists ---------- */
+.scenario-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+.scenario-btn {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+  color: #1a1a1a;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+}
+.scenario-btn:hover { background: #f0f0ee; border-color: #bbb; }
+.scenario-btn.inactive {
+  background: #f5f5f3;
+  border: 1px dashed #ddd;
+  color: #aaa;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.add-scenario-btn {
+  background: #fff;
+  border: 1px solid #378ADD;
+  color: #378ADD;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.add-scenario-btn:hover { background: #378ADD; color: #fff; }
+
+.random-btn {
+  background: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.random-btn:hover { background: #333; }
+.random-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 1.25rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.back-btn:hover { color: #1a1a1a; }
+
+.diagnosis-label {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border-radius: 8px;
+  border-left: 3px solid #378ADD;
+}
+
+/* ---------- Selection picker (choose scenarios screen) ---------- */
+.picker-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+.picker-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.picker-item input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; flex-shrink: 0; }
+.picker-item.checked { border-color: #378ADD; background: #f0f7ff; }
+.confirm-btn {
+  background: #378ADD;
+  border: none;
+  border-radius: 8px;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  width: 100%;
+}
+.confirm-btn:hover { background: #2c70b3; }
+.confirm-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+/* ---------- Form fields (used inside tests) ---------- */
+.lungs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+@media (max-width: 560px) { .lungs-grid { grid-template-columns: 1fr; } }
+.zone-block { padding: 10px 12px; background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; }
+.zone-title { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
+.field-subtitle { font-size: 12px; font-weight: 500; color: #666; margin: 6px 0 4px; }
+.field-block { margin-bottom: 10px; padding: 10px 12px; background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; }
+.field-title { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 6px; }
+.opt { display: flex; align-items: flex-start; gap: 7px; margin: 4px 0; cursor: pointer; font-size: 14px; line-height: 1.4; }
+.opt input[type=checkbox] { margin-top: 2px; flex-shrink: 0; cursor: pointer; width: 15px; height: 15px; }
+.opt.correct { color: #2d6a0f; font-weight: 500; }
+.opt.wrong { color: #a32d2d; text-decoration: line-through; }
+.opt.missed { color: #185FA5; font-weight: 500; }
+
+.submit-btn {
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  padding: 0.85rem 2rem;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  width: 100%;
+  margin: 1.5rem 0 0.75rem;
+}
+.submit-btn:hover { background: #f0f0ee; }
+
+.result-banner { border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.result-banner.good { background: #eaf3de; color: #2d6a0f; }
+.result-banner.bad { background: #fcebeb; color: #a32d2d; }
+.legend { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #555; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.section-divider { font-size: 13px; font-weight: 600; color: #888; margin: 1.25rem 0 0.5rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+@media (max-width: 480px) {
+  .container { padding: 1.25rem 0.75rem 5rem; }
+  h1 { font-size: 19px; }
+  .system-card { padding: 0.9rem 1rem; }
+  .system-card img { width: 60px; height: 60px; }
+  .system-card-title { font-size: 15px; }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="container">
+
+<div id="page-list" class="page active">
+  <button class="back-btn" onclick="window.location.href='index.html'">
+    <i class="ti ti-arrow-left"></i> ← На главную
+  </button>
+  <h1>Пищеварительная система</h1>
+  <p class="subtitle">Выберите сценарий или нажмите «Случайный»</p>
+  <button class="add-scenario-btn" style="margin-bottom:1rem;" onclick="showPicker()">Настроить список сценариев</button>
+  <div class="scenario-list" id="scenario-list"></div>
+  <button class="random-btn" id="random-btn" onclick="startRandom()">
+    <i class="ti ti-shuffle"></i> Случайный сценарий
+  </button>
+</div>
+
+<div id="page-picker" class="page">
+  <button class="back-btn" onclick="backFromPicker()">
+    <i class="ti ti-arrow-left"></i> Назад
+  </button>
+  <h1>Какие сценарии вы будете тренировать?</h1>
+  <p class="subtitle">Отметьте сценарии, актуальные для вашего вуза. Список сохранится — его всегда можно изменить позже.</p>
+  <div class="picker-list" id="picker-list"></div>
+  <button class="confirm-btn" id="confirm-picker-btn" onclick="confirmPicker()">Сохранить список</button>
+</div>
+
+<div id="page-form" class="page">
+  <button class="back-btn" onclick="goBack()">
+    <i class="ti ti-arrow-left"></i> Назад к списку
+  </button>
+  <div class="diagnosis-label" id="diagnosis-label"></div>
+  <div id="form-container"></div>
+  <button class="submit-btn" id="submit-btn" onclick="submitForm()">Проверить ответы</button>
+  <div id="result-area"></div>
+</div>
+
+</div>
+</div>
+<div style="position:fixed;bottom:18px;right:18px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+  <button class="donate-fab" onclick="openFeedback()" style="background:#f0f7ff;border-color:#378ADD;">
+    <span style="color:#378ADD;">Обратная связь</span>
+ </div>
+<div class="donate-modal-overlay" id="donate-overlay">
+  <div class="donate-modal" style="max-width:360px;">
+    <h3 style="margin-bottom:0.75rem;">Поддержать проект</h3>
+    <p style="margin-bottom:0.75rem;">Если тренажёр помогает в подготовке — можно угостить автора кофе. Совершенно необязательно, но приятно :)</p>
+    <img src="donate.png" alt="QR для оплаты" style="width:180px;height:180px;display:block;margin:0 auto 0.75rem;border-radius:8px;">
+    <a href="https://boosty.to/gall4/donate" target="_blank" style="display:block;background:#378ADD;color:#fff;text-decoration:none;border-radius:8px;padding:0.65rem 1rem;font-size:14px;font-weight:600;text-align:center;margin-bottom:0.75rem;">Порадовать</a>
+    <button class="donate-modal-close" onclick="closeDonate()">Закрыть</button>
+  </div>
+</div>
+<div class="donate-modal-overlay" id="feedback-overlay">
+  <div class="donate-modal" style="max-width:360px;">
+    <h3 style="margin-bottom:0.75rem;">Обратная связь</h3>
+    <p style="margin-bottom:1rem;line-height:1.6;">Есть предложения, нашли ошибку или хотите добавить новые сценарии? Пишите — буду рада!</p>
+    <a href="mailto:klimgoth@gmail.com" style="display:block;background:#1a1a1a;color:#fff;text-decoration:none;border-radius:8px;padding:0.65rem 1rem;font-size:14px;font-weight:600;text-align:center;margin-bottom:0.75rem;">✉️ klimgoth@gmail.com</a>
+    <button class="donate-modal-close" onclick="closeFeedback()">Закрыть</button>
+  </div>
+</div>
+<script>
+const STORAGE_KEY = 'oske_gi_selected_v1';
+
+const SCENARIOS = [
+  { name: "Норма" },
+  { name: "Гепатомегалия, желтуха" },
+  { name: "Спленомегалия" },
+  { name: "Асцит, гепатомегалия, желтуха" }
+];
+
+const FORM_FIELDS = [
+  { id: "sclera", label: "1. Осмотр склер глаз и слизистых",
+    options: ["без особенностей", "желтушность склер и слизистых", "бледность конъюнктивы"], multi: false },
+  { id: "abdomen", label: "2. Осмотр живота",
+    options: ["без особенностей", "увеличен в размере", "расширение подкожных вен"], multi: false },
+  { id: "palpation_pain", label: "3. Болезненность при пальпации живота",
+    options: ["не определяется", "в эпигастрии", "в правом подреберье", "в левом подреберье", "в левой подвздошной области", "в правой подвздошной области", "в околопупочной области"], multi: false },
+  { id: "muscle_tension", label: "4. Наличие напряжения мышц передней брюшной стенки",
+    options: ["да", "нет"], multi: false },
+  { id: "diastasis", label: "5. Наличие диастаза прямых мышц живота или расширения пупочного кольца",
+    options: ["есть диастаз прямых мышц", "есть расширение пупочного кольца", "нет изменений"], multi: false },
+  { id: "ascites", label: "6. Наличие асцита (положительный симптом флюктуации)",
+    options: ["да", "нет"], multi: false },
+  { id: "liver_border", label: "7. Нижняя граница печени по среднеключичной линии",
+    options: ["у края реберной дуги", "расположена на 1 см и более ниже реберной дуги"], multi: false },
+  { id: "liver", label: "8. Печень",
+    options: ["не пальпируется", "увеличена, гладкая поверхность, край закруглен", "увеличена, бугристая поверхность, край неровный"], multi: false },
+  { id: "spleen", label: "9. Селезенка",
+    options: ["не пальпируется", "увеличена в размере, пальпируется"], multi: false },
+  { id: "deep_palpation", label: "10. Методом глубокой пальпации у пациента определяется",
+    options: ["Сигмовидная кишка", "Слепая кишка", "Восходящая ободочная кишка", "Нисходящая ободочная кишка", "Поперечная ободочная кишка", "Толстая кишка не пальпируется"], multi: false },
+  { id: "diagnosis", label: "11. Предварительная диагностическая гипотеза",
+    options: ["Норма", "Гепатомегалия, желтуха", "Спленомегалия", "Гепатоспленомегалия, желтуха", "Асцит, гепатомегалия, желтуха"], multi: false },
+  { id: "additional_exam", label: "12. Необходимость дополнительного обследования",
+    options: ["Не требуется", "УЗИ органов брюшной полости", "МРТ органов брюшной полости", "Лапароцентез"], multi: true }
+];
+
+const ANSWERS = {
+  "Норма": {
+    sclera: ["без особенностей"], abdomen: ["без особенностей"], palpation_pain: ["не определяется"],
+    muscle_tension: ["нет"], diastasis: ["нет изменений"], ascites: ["нет"],
+    liver_border: ["у края реберной дуги"], liver: ["не пальпируется"], spleen: ["не пальпируется"],
+    deep_palpation: ["Толстая кишка не пальпируется"], diagnosis: ["Норма"], additional_exam: ["Не требуется"]
+  },
+  "Гепатомегалия, желтуха": {
+    sclera: ["желтушность склер и слизистых"], abdomen: ["без особенностей"], palpation_pain: ["в эпигастрии"],
+    muscle_tension: ["нет"], diastasis: ["нет изменений"], ascites: ["нет"],
+    liver_border: ["расположена на 1 см и более ниже реберной дуги"], liver: ["увеличена, гладкая поверхность, край закруглен"], spleen: ["не пальпируется"],
+    deep_palpation: ["Толстая кишка не пальпируется"], diagnosis: ["Гепатомегалия, желтуха"], additional_exam: ["УЗИ органов брюшной полости"]
+  },
+  "Спленомегалия": {
+    sclera: ["без особенностей"], abdomen: ["без особенностей"], palpation_pain: ["в эпигастрии"],
+    muscle_tension: ["нет"], diastasis: ["нет изменений"], ascites: ["нет"],
+    liver_border: ["у края реберной дуги"], liver: ["не пальпируется"], spleen: ["увеличена в размере, пальпируется"],
+    deep_palpation: ["Толстая кишка не пальпируется"], diagnosis: ["Спленомегалия"], additional_exam: ["УЗИ органов брюшной полости"]
+  },
+  "Асцит, гепатомегалия, желтуха": {
+    sclera: ["желтушность склер и слизистых"], abdomen: ["увеличен в размере"], palpation_pain: ["в эпигастрии"],
+    muscle_tension: ["нет"], diastasis: ["нет изменений"], ascites: ["да"],
+    liver_border: ["расположена на 1 см и более ниже реберной дуги"], liver: ["увеличена, бугристая поверхность, край неровный"], spleen: ["не пальпируется"],
+    deep_palpation: ["Толстая кишка не пальпируется"], diagnosis: ["Асцит, гепатомегалия, желтуха"], additional_exam: ["Лапароцентез"]
+  }
+};
+
+let currentScenario = null;
+let submitted = false;
+
+function startScenario(name) {
+  currentScenario = name;
+  submitted = false;
+  document.getElementById('diagnosis-label').textContent = name;
+  buildForm();
+  document.getElementById('submit-btn').style.display = 'block';
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('page-list').classList.remove('active');
+  document.getElementById('page-form').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goBack() {
+  document.getElementById('page-form').classList.remove('active');
+  document.getElementById('page-list').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function buildForm() {
+  const container = document.getElementById('form-container');
+  container.innerHTML = '';
+  FORM_FIELDS.forEach(field => {
+    const block = document.createElement('div');
+    block.className = 'field-block';
+    const title = document.createElement('div');
+    title.className = 'field-title';
+    title.textContent = field.label;
+    block.appendChild(title);
+    buildOptionGroup(block, field.id, field.options, field.multi);
+    container.appendChild(block);
+  });
+}
+
+function submitForm() {
+  if (submitted) return;
+  submitted = true;
+  const answers = ANSWERS[currentScenario];
+  const container = document.getElementById('form-container');
+  let errors = 0;
+
+  FORM_FIELDS.forEach(field => {
+    const correct = answers[field.id] || [];
+    if (field.multi) {
+      errors += checkMultiField(container, field.id, correct);
+    } else {
+      errors += checkSingleField(container, field.id, correct);
+    }
+  });
+
+  renderResult(errors);
+}
+
+function renderScenarioLabel(s) {
+  return s.name;
+}
+</script>
+<script>// ===== Общая логика: выбор сценариев + сохранение в localStorage =====
+// STORAGE_KEY задаётся в каждом файле отдельно перед подключением этого блока
+
+function getSelectedScenarios() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr) && arr.length > 0) return arr;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveSelectedScenarios(arr) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  } catch (e) {}
+}
+
+function clearSelectedScenarios() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {}
+}
+
+let pickerTempSelection = [];
+
+function showPicker() {
+  const existing = getSelectedScenarios();
+  pickerTempSelection = existing ? [...existing] : SCENARIOS.map(s => s.name);
+
+  document.getElementById('page-list').classList.remove('active');
+  document.getElementById('page-picker').classList.add('active');
+  renderPicker();
+  window.scrollTo(0,0);
+}
+
+function renderPicker() {
+  const list = document.getElementById('picker-list');
+  list.innerHTML = '';
+  SCENARIOS.forEach(s => {
+    const item = document.createElement('label');
+    item.className = 'picker-item' + (pickerTempSelection.includes(s.name) ? ' checked' : '');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = pickerTempSelection.includes(s.name);
+    cb.onchange = () => {
+      if (cb.checked) {
+        if (!pickerTempSelection.includes(s.name)) pickerTempSelection.push(s.name);
+      } else {
+        pickerTempSelection = pickerTempSelection.filter(n => n !== s.name);
+      }
+      renderPicker();
+    };
+    const span = document.createElement('span');
+    span.textContent = s.name;
+    item.appendChild(cb);
+    item.appendChild(span);
+    list.appendChild(item);
+  });
+  document.getElementById('confirm-picker-btn').disabled = pickerTempSelection.length === 0;
+}
+
+function confirmPicker() {
+  if (pickerTempSelection.length === 0) return;
+  saveSelectedScenarios(pickerTempSelection);
+  document.getElementById('page-picker').classList.remove('active');
+  document.getElementById('page-list').classList.add('active');
+  renderScenarioList();
+  window.scrollTo(0,0);
+}
+
+function backFromPicker() {
+  document.getElementById('page-picker').classList.remove('active');
+  document.getElementById('page-list').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function renderScenarioList() {
+  const selected = getSelectedScenarios();
+  const list = document.getElementById('scenario-list');
+  list.innerHTML = '';
+
+  SCENARIOS.forEach(s => {
+    const isActive = !selected || selected.includes(s.name);
+    if (isActive) {
+      const btn = document.createElement('button');
+      btn.className = 'scenario-btn';
+      btn.innerHTML = renderScenarioLabel(s);
+      btn.onclick = () => startScenario(s.name);
+      list.appendChild(btn);
+    } else {
+      const row = document.createElement('div');
+      row.className = 'scenario-btn inactive';
+      const span = document.createElement('span');
+      span.textContent = s.name;
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-scenario-btn';
+      addBtn.textContent = '+ добавить';
+      addBtn.onclick = (e) => {
+        e.stopPropagation();
+        const cur = getSelectedScenarios() || SCENARIOS.map(x => x.name);
+        if (!cur.includes(s.name)) cur.push(s.name);
+        saveSelectedScenarios(cur);
+        renderScenarioList();
+      };
+      row.appendChild(span);
+      row.appendChild(addBtn);
+      list.appendChild(row);
+    }
+  });
+
+  updateRandomButton();
+}
+
+function renderScenarioLabel(s) {
+  return s.name;
+}
+
+function updateRandomButton() {
+  const selected = getSelectedScenarios();
+  const pool = selected ? SCENARIOS.filter(s => selected.includes(s.name)) : SCENARIOS;
+  const btn = document.getElementById('random-btn');
+  if (btn) btn.disabled = pool.length === 0;
+}
+
+function startRandom() {
+  const selected = getSelectedScenarios();
+  const pool = selected ? SCENARIOS.filter(s => selected.includes(s.name)) : SCENARIOS;
+  if (pool.length === 0) return;
+  const s = pool[Math.floor(Math.random() * pool.length)];
+  startScenario(s.name);
+}
+
+function openDonate() {
+  document.getElementById('donate-overlay').classList.add('active');
+}
+function closeDonate() {
+  document.getElementById('donate-overlay').classList.remove('active');
+}
+</script>
+<script>// ===== Общая логика проверки тестов (ИСПРАВЛЕННЫЙ подсчёт ошибок) =====
+
+function buildOptionGroup(container, fieldId, options, multi) {
+  options.forEach(opt => {
+    const label = document.createElement('label');
+    label.className = 'opt';
+    label.dataset.field = fieldId;
+    label.dataset.value = opt;
+    const inp = document.createElement('input');
+    inp.type = 'checkbox';
+    inp.name = fieldId;
+    inp.value = opt;
+    if (!multi) {
+      inp.addEventListener('change', function() {
+        if (this.checked) {
+          container.parentElement.querySelectorAll(`input[name="${fieldId}"]`).forEach(cb => {
+            if (cb !== this) cb.checked = false;
+          });
+        }
+      });
+    }
+    const span = document.createElement('span');
+    span.textContent = opt;
+    label.appendChild(inp);
+    label.appendChild(span);
+    container.appendChild(label);
+  });
+}
+
+/*
+  ИСПРАВЛЕНИЕ ОШИБКИ ПОДСЧЁТА:
+  Раньше для вопроса с одним правильным ответом, если человек выбирал
+  неверный вариант, насчитывалось 2 ошибки: одна за "выбрано неверно"
+  (wrong) и вторая за "пропущен верный" (missed) — хотя по смыслу это
+  ОДНА ошибка (один неверно отвеченный вопрос).
+
+  Новая логика:
+  - checkSingleField — для вопросов с ОДНИМ правильным ответом.
+    Считает ровно 0 или 1 ошибку за весь вопрос, независимо от того,
+    выбрал человек неверный вариант, несколько вариантов или ничего.
+  - checkMultiField — для вопросов с НЕСКОЛЬКИМИ правильными ответами
+    (multi-select). Здесь действительно может быть несколько отдельных
+    несовпадений (например, отметил лишний пункт И забыл нужный),
+    поэтому здесь считаем построчно, но это осознанное решение,
+    а не баг.
+*/
+
+function checkSingleField(formContainer, fieldId, correctValues) {
+  const labels = formContainer.querySelectorAll(`label[data-field="${fieldId}"]`);
+  let hasError = false;
+  labels.forEach(label => {
+    const inp = label.querySelector('input');
+    const val = label.dataset.value;
+    const isCorrect = correctValues.includes(val);
+    const isChecked = inp.checked;
+    if (isChecked && isCorrect) {
+      label.classList.add('correct');
+    } else if (isChecked && !isCorrect) {
+      label.classList.add('wrong');
+      hasError = true;
+    } else if (!isChecked && isCorrect) {
+      label.classList.add('missed');
+      hasError = true;
+    }
+    inp.disabled = true;
+  });
+  return hasError ? 1 : 0;
+}
+
+function checkMultiField(formContainer, fieldId, correctValues) {
+  const labels = formContainer.querySelectorAll(`label[data-field="${fieldId}"]`);
+  let errors = 0;
+  labels.forEach(label => {
+    const inp = label.querySelector('input');
+    const val = label.dataset.value;
+    const isCorrect = correctValues.includes(val);
+    const isChecked = inp.checked;
+    if (isChecked && isCorrect) {
+      label.classList.add('correct');
+    } else if (isChecked && !isCorrect) {
+      label.classList.add('wrong');
+      errors++;
+    } else if (!isChecked && isCorrect) {
+      label.classList.add('missed');
+      errors++;
+    }
+    inp.disabled = true;
+  });
+  return errors;
+}
+
+function renderResult(errors) {
+  document.getElementById('submit-btn').style.display = 'none';
+  const ra = document.getElementById('result-area');
+  ra.innerHTML = '';
+
+  const banner = document.createElement('div');
+  banner.className = `result-banner ${errors === 0 ? 'good' : 'bad'}`;
+  banner.innerHTML = errors === 0
+    ? '<i class="ti ti-circle-check"></i> Отлично! Все ответы верны!'
+    : `<i class="ti ti-alert-circle"></i> Найдено ошибок: ${errors}. Ошибки выделены выше.`;
+  ra.appendChild(banner);
+
+  const legend = document.createElement('div');
+  legend.className = 'legend';
+  legend.innerHTML = `
+    <div class="legend-item"><div class="legend-dot" style="background:#2d6a0f"></div>Верно выбрано</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a32d2d"></div>Выбрано неверно</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#185FA5"></div>Нужно было выбрать</div>
+  `;
+  ra.appendChild(legend);
+
+  const retryBtn = document.createElement('button');
+  retryBtn.className = 'submit-btn';
+  retryBtn.textContent = 'Попробовать снова';
+  retryBtn.onclick = () => startScenario(currentScenario);
+  ra.appendChild(retryBtn);
+
+  banner.scrollIntoView({behavior:'smooth'});
+}
+</script>
+<script>renderScenarioList();</script>
+
+
+</div>
+</div>
+<div class="donate-modal-overlay" id="feedbackModal">
+  <div class="donate-modal" style="max-width:360px;">
+    <h3 style="margin-bottom:0.75rem;">Обратная связь</h3>
+    <p style="margin-bottom:1.25rem;line-height:1.6;">Есть предложения, нашли ошибку или хотите добавить новые сценарии? Пишите сюда — <strong>klimgoth@gmail.com</strong></p>
+    <button class="donate-modal-close" onclick="closeFeedback()">Закрыть</button>
+  </div>
+</div>
+<script>
+function openFeedback() { 
+  document.getElementById('feedbackModal').classList.add('active'); 
+}
+
+// Добавляем эту функцию, которую вызывает кнопка «Закрыть»
+function closeFeedback() { 
+  document.getElementById('feedbackModal').classList.remove('active'); 
+}
+
+// Этот код оставляет рабочим закрытие при клике на затемненный фон вокруг окна
+document.getElementById('feedbackModal').onclick = (e) => { 
+  if(e.target === document.getElementById('feedbackModal')) {
+    closeFeedback();
+  }
+};
+</script>
+</body>
+</html>
